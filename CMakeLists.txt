@@ -17,13 +17,20 @@ include(FetchContent)
 # 1. Dependency: nlohmann/json
 find_package(nlohmann_json 3.10 QUIET)
 if(NOT nlohmann_json_FOUND)
-    message(STATUS "nlohmann/json not found locally; acquiring via FetchContent...")
-    FetchContent_Declare(
-        nlohmann_json
-        GIT_REPOSITORY https://github.com/nlohmann/json.git
-        GIT_TAG v3.11.3
-    )
-    FetchContent_MakeAvailable(nlohmann_json)
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/include/nlohmann/json.hpp")
+        message(STATUS "Using local nlohmann/json from include/")
+        add_library(nlohmann_json INTERFACE)
+        target_include_directories(nlohmann_json INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+        add_library(nlohmann_json::nlohmann_json ALIAS nlohmann_json)
+    else()
+        message(STATUS "nlohmann/json not found locally; acquiring via FetchContent...")
+        FetchContent_Declare(
+            nlohmann_json
+            GIT_REPOSITORY https://github.com/nlohmann/json.git
+            GIT_TAG v3.11.3
+        )
+        FetchContent_MakeAvailable(nlohmann_json)
+    endif()
 endif()
 
 # 2. Core Static Library
